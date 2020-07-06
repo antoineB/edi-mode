@@ -90,7 +90,10 @@
   (interactive)
   (save-excursion
 	(goto-char (point-min))
-	(while (search-forward edi-segment-terminator nil t) (replace-match (concat edi-segment-terminator "\n"))))
+	(while (re-search-forward (concat "[^" edi-release-character "]\\(" edi-segment-terminator "\\)") nil t)
+          (backward-char)
+          (re-search-forward edi-segment-terminator)
+          (replace-match (concat edi-segment-terminator "\n"))))
   (set-buffer-modified-p nil))
 
 (defun edi-readable-to-edi ()
@@ -98,7 +101,11 @@
   (interactive)
   (save-excursion
 	(goto-char (point-min))
-	(while (search-forward (concat edi-segment-terminator "\n") nil t) (replace-match edi-segment-terminator)))
+	(while (re-search-forward (concat "[^" edi-release-character "]\\(" edi-segment-terminator "\n\\)") nil t)
+          (backward-char)
+          (backward-char)
+          (re-search-forward (concat edi-segment-terminator "\n"))
+          (replace-match edi-segment-terminator)))
   (set-buffer-modified-p nil))
 
 (defun edi-count-segments (segment)
@@ -107,7 +114,7 @@
   (save-excursion
 	(goto-char (point-min))
 	(let ((a 0))
-      (while (re-search-forward (format (concat "\\(^\\|" edi-segment-terminator "\\)%s") segment) nil t)
+      (while (re-search-forward (format (concat "\\(^\\|[^" edi-release-character "]" edi-segment-terminator "\\)%s") segment) nil t)
         (setq a (+ a 1)))
       (message (format "%i %s segments found" a segment))
       )))
